@@ -51,7 +51,7 @@ function createScene() {
     nearPlane,
     farPlane
     );
-  scene.fog = new THREE.Fog(Colors.pink, 0,500);
+  scene.fog = new THREE.Fog(0xDFE9F2, 0,900);
 
   // Set camera x based on screen width
   camera.position.x = -110
@@ -75,29 +75,29 @@ function createScene() {
 
 function createLights() {
 	hemisphereLight = new THREE.HemisphereLight(0xcad5e3,0x070a0d, .8)
-	shadowLight = new THREE.DirectionalLight(0xf3e8ff, .8);
-	ambientLight = new THREE.AmbientLight(0xdc8874, .5);
+	//shadowLight = new THREE.DirectionalLight(0xf3e8ff, .8);
+	shadowLight = new THREE.DirectionalLight(0xDD3B1E3, .7);
+	ambientLight = new THREE.AmbientLight(0xB8BBBF, .5);
 	
-
 	// Set the direction of the light  
-	shadowLight.position.set(200, 600, 400);
+	shadowLight.position.set(200, 500, 100);
 	
 	// Allow shadow casting 
 	shadowLight.castShadow = true
 
 	// define the visible area of the projected shadow
 	shadowLight.shadow.camera.left = -100;
-	shadowLight.shadow.camera.right = 400;
-	shadowLight.shadow.camera.top = 400;
-	shadowLight.shadow.camera.bottom = -400;
-	shadowLight.shadow.camera.near = 1;
+	shadowLight.shadow.camera.right = 80;
+	shadowLight.shadow.camera.top = 100;
+	shadowLight.shadow.camera.bottom = -100;
+	shadowLight.shadow.camera.near = 400;
 	shadowLight.shadow.camera.far = 600;
 
 	// Define the resolution of the shadow; 
 	shadowLight.shadow.mapSize.width = 2048;
 	shadowLight.shadow.mapSize.height = 2048;
 	
-	//scene.add(ambientLight);
+	scene.add(ambientLight);
 	scene.add(hemisphereLight);  
 	scene.add(shadowLight);
 }
@@ -143,8 +143,6 @@ function createTerrain(){
 	ter = new Terrain();
 	ter.mesh.position.y = -1000;
 	scene.add(ter.mesh);
-	//hill = new Hill(50);
-	//scene.add(hill.mesh);
 }
 
 function removeEntity(object) {
@@ -160,7 +158,6 @@ var Obstacle = function(){
 	var geom = new THREE.TetrahedronGeometry(8,1);
   var mat = new THREE.MeshPhongMaterial({color:Colors.pink, shading:THREE.FlatShading});
   this.mesh = new THREE.Mesh(geom,mat);
-  //this.mesh.castShadow = true;
 }
 
 var Aim = function(){
@@ -265,7 +262,6 @@ var Van = function(){
 	gLWing.vertices[1].z += 7
 	gLWing.vertices[1].y -= 2.5
 	gLWing.vertices[3].z += 7
-	//gLWing.vertices[3].y -= 2
 	gLWing.vertices[4].y -= 2
 
 	this.mesh.add(lwing);
@@ -277,7 +273,6 @@ var Van = function(){
 	rwing.position.x += 3;
 	rwing.position.z += 4.6;
 	rwing.position.y -= .5;
-	//rwing.position.z += 7;
 	rwing.castShadow = true;
 	
 	gRWing.vertices[1].y -= 2
@@ -288,8 +283,6 @@ var Van = function(){
 
 	this.mesh.add(rwing);
 
-	//this.mesh.receiveShadow = true;
-	//this.mesh.castShadow = true;
 }
 
 //
@@ -341,27 +334,12 @@ function updatePlayer(){
 }
 
 function updateCam(){
-	// Reset camera position and aim
-  //var camX = 0.02*WIDTH - 127
-  // = camX;
-	//camera.lookAt(new THREE.Vector3(0,0,0))
-  //
-  // Update player model position
-  //console.log(cam.y)
+	// Set the camera to follow players
   cam.y += (player.model.mesh.position.y+10 - cam.y)*0.04;
   cam.z += (player.model.mesh.position.z/2 - cam.z)*0.04;
-  //var y = cam.y player.model.mesh.position.y/2 + 40
-  //var y = 4000;
-	//camera.position.y += (camera.position.y - (player.aim.y))
-	//console.log(y)
-	//player.model.mesh.position.z += (player.aim.x - zP)*0.08;
-
-	// Rotate player model 
-	
 	camera.lookAt(new THREE.Vector3(cam.x,cam.y,cam.z))
 	camera.updateProjectionMatrix();
 }
-
 
 function rotateWorld(){
 	ground.mesh.rotation.y += game.speed/10;
