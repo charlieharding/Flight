@@ -71,6 +71,8 @@ function createScene() {
 function createLights() {
 	hemisphereLight = new THREE.HemisphereLight(0xcad5e3,0x070a0d, .8)
 	shadowLight = new THREE.DirectionalLight(0xf3e8ff, .8);
+	ambientLight = new THREE.AmbientLight(0xdc8874, .5);
+	
 
 	// Set the direction of the light  
 	shadowLight.position.set(200, 600, 400);
@@ -90,6 +92,7 @@ function createLights() {
 	shadowLight.shadow.mapSize.width = 2048;
 	shadowLight.shadow.mapSize.height = 2048;
 	
+	//scene.add(ambientLight);
 	scene.add(hemisphereLight);  
 	scene.add(shadowLight);
 }
@@ -226,15 +229,59 @@ var Van = function(){
 	this.mesh = new THREE.Object3D();
   this.mesh.name = "wing";
 
-  // Van body
+  // Body
 	var gBody = new THREE.BoxGeometry( 20,4,8,1,1,1 );
 	var mBody = new THREE.MeshPhongMaterial({color:Colors.purple, shading:THREE.FlatShading});
 	var body = new THREE.Mesh( gBody, mBody );
 	body.position.x += 5;
 	body.castShadow = true;
+	
+	gBody.vertices[2].z -= 3;
+	gBody.vertices[3].z += 3;
+	gBody.vertices[0].x -= 12;
+	gBody.vertices[0].z -= 2;
+	gBody.vertices[5].z -= 2;
+	gBody.vertices[1].x -= 12;
+	gBody.vertices[1].z += 2;
+	gBody.vertices[4].z += 2;
+
 	this.mesh.add(body);
 
-	// Cab
+	// Left Wing
+	var gLWing = new THREE.BoxGeometry( 16,3,8,1,1,1 );
+	var mLWing = new THREE.MeshPhongMaterial({color:Colors.purple, shading:THREE.FlatShading});
+	var lwing = new THREE.Mesh( gLWing, mLWing );
+	lwing.position.x += 3;
+	lwing.position.z -= 4.6;
+	lwing.position.y -= .5;
+	lwing.castShadow = true;
+	
+	gLWing.vertices[0].y -= 2
+	gLWing.vertices[1].z += 7
+	gLWing.vertices[1].y -= 2.5
+	gLWing.vertices[3].z += 7
+	//gLWing.vertices[3].y -= 2
+	gLWing.vertices[4].y -= 2
+
+	this.mesh.add(lwing);
+
+	// Right Wing
+	var gRWing = new THREE.BoxGeometry( 16,3,8,1,1,1 );
+	var mRWing = new THREE.MeshPhongMaterial({color:Colors.purple, shading:THREE.FlatShading});
+	var rwing = new THREE.Mesh( gRWing, mRWing );
+	rwing.position.x += 3;
+	rwing.position.z += 4.6;
+	rwing.position.y -= .5;
+	//rwing.position.z += 7;
+	rwing.castShadow = true;
+	
+	gRWing.vertices[1].y -= 2
+	gRWing.vertices[0].z -= 7
+	gRWing.vertices[0].y -= 2.5
+	gRWing.vertices[2].z -= 7
+	gRWing.vertices[5].y -= 2
+
+	this.mesh.add(rwing);
 
 	//this.mesh.receiveShadow = true;
 	//this.mesh.castShadow = true;
@@ -280,9 +327,14 @@ function updatePlayer(){
 	}
 
 
-	// Update Player position
+	// Update player model position
 	player.model.mesh.position.y += (player.aim.y - yP)*0.08;
 	player.model.mesh.position.z += (player.aim.x - zP)*0.08;
+
+	// Rotate player model 
+	player.model.mesh.rotation.z = (player.aim.y - yP)*0.04;  // Pitch
+	player.model.mesh.rotation.x = (player.aim.x - zP)*0.05;	// Roll
+
 
 	// Reset camera position and aim
   //var camX = 0.02*WIDTH - 127
