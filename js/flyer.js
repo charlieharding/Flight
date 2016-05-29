@@ -13,8 +13,13 @@ var game = {
 	speed: .008,
 	rate: .000001,
 	width: 150,
-	height: 60,
+	height: 90,
 	gravity: .6
+}
+var cam = {
+	x: 0,
+	y: 60,
+	z: 0
 }
 var player = {};
 var deltaTime = 0;
@@ -49,9 +54,9 @@ function createScene() {
   scene.fog = new THREE.Fog(Colors.pink, 0,500);
 
   // Set camera x based on screen width
-  camera.position.x = -100
-  camera.position.y = +50
-  camera.lookAt(new THREE.Vector3(60,0,0))
+  camera.position.x = -110
+  camera.position.y = +60
+  camera.lookAt(new THREE.Vector3(0,0,0))
 	// Create the renderer
 	renderer = new THREE.WebGLRenderer({ 
 		alpha: true,
@@ -326,7 +331,6 @@ function updatePlayer(){
 		aim.mesh.position.y = player.aim.y
 	}
 
-
 	// Update player model position
 	player.model.mesh.position.y += (player.aim.y - yP)*0.08;
 	player.model.mesh.position.z += (player.aim.x - zP)*0.08;
@@ -334,14 +338,30 @@ function updatePlayer(){
 	// Rotate player model 
 	player.model.mesh.rotation.z = (player.aim.y - yP)*0.04;  // Pitch
 	player.model.mesh.rotation.x = (player.aim.x - zP)*0.05;	// Roll
+}
 
-
+function updateCam(){
 	// Reset camera position and aim
   //var camX = 0.02*WIDTH - 127
-  //camera.position.x = camX;
+  // = camX;
 	//camera.lookAt(new THREE.Vector3(0,0,0))
-  //camera.updateProjectionMatrix();
+  //
+  // Update player model position
+  //console.log(cam.y)
+  cam.y += (player.model.mesh.position.y+10 - cam.y)*0.04;
+  cam.z += (player.model.mesh.position.z/2 - cam.z)*0.04;
+  //var y = cam.y player.model.mesh.position.y/2 + 40
+  //var y = 4000;
+	//camera.position.y += (camera.position.y - (player.aim.y))
+	//console.log(y)
+	//player.model.mesh.position.z += (player.aim.x - zP)*0.08;
+
+	// Rotate player model 
+	
+	camera.lookAt(new THREE.Vector3(cam.x,cam.y,cam.z))
+	camera.updateProjectionMatrix();
 }
+
 
 function rotateWorld(){
 	ground.mesh.rotation.y += game.speed/10;
@@ -420,10 +440,12 @@ function loop(){
 	newTime = new Date().getTime();
   deltaTime = newTime-oldTime;
   oldTime = newTime;
-  updatePlayer();
+
 	updateDistance();
-	updateObstacles();
 	rotateWorld();
+	updatePlayer();
+  updateCam();
+	updateObstacles();
 	// Render the scene
 	renderer.render(scene, camera);
 	requestAnimationFrame(loop);
