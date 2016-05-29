@@ -51,7 +51,7 @@ function createScene() {
   // Set camera x based on screen width
   camera.position.x = -100
   camera.position.y = +50
-  camera.lookAt(new THREE.Vector3(0,0,0))
+  camera.lookAt(new THREE.Vector3(60,0,0))
 	// Create the renderer
 	renderer = new THREE.WebGLRenderer({ 
 		alpha: true,
@@ -100,22 +100,17 @@ function createGround(){
 }
 
 function createPlayer(){
-	player.turnSpeed = .04;
-	player.moveSpeed = .05;
-	player.up = false;
-	player.down = false;
-	player.left = false;
-	player.right = false;
+	player.move = 2; // How fast the player can move the aim.
 	player.yaw = 0;
 	player.roll = 0;
 	player.pitch = 0;
-	player.pitchMax = 20;
-	player.pitchDelt = 0;
+	player.showAim = false;
   player.model = new Van();
   player.model.mesh.position.y = +15;
   player.model.mesh.position.x = -40;
+  player.aim = {x:player.model.mesh.position.z, y:player.model.mesh.position.y};
+  if(player.showAim){createAim();} // Make the player's aim visible
   scene.add(player.model.mesh);
-  //player.model.mesh.castShadow = true;
 }
 
 function createObstacle(){
@@ -126,6 +121,14 @@ function createObstacle(){
 	obs.mesh.rotation.y = Math.random() * Math.PI*2
 	obstaclePool.push(obs)
 	scene.add( obs.mesh );
+}
+
+function createAim(){
+	aim = new Aim();
+	aim.mesh.position.x = 10
+	aim.mesh.position.z = player.aim.x
+	aim.mesh.position.y = player.aim.y
+	scene.add( aim.mesh );
 }
 
 function createTerrain(){
@@ -150,6 +153,12 @@ var Obstacle = function(){
   var mat = new THREE.MeshPhongMaterial({color:Colors.pink, shading:THREE.FlatShading});
   this.mesh = new THREE.Mesh(geom,mat);
   //this.mesh.castShadow = true;
+}
+
+var Aim = function(){
+	var geom = new THREE.BoxGeometry( 4,4,4,1,1,1 );
+	var mat = new THREE.MeshPhongMaterial({color:Colors.purple, shading:THREE.FlatShading});
+  this.mesh = new THREE.Mesh(geom,mat);
 }
 
 var Ground = function(){
@@ -242,7 +251,7 @@ function updateDistance(){
 
 function updateObstacles(){
 	for (var i = 0; i < obstaclePool.length; i++) {
-  	obstaclePool[i].mesh.position.x -= game.speed;
+  	obstaclePool[i].mesh.position.x -= 10;
   	//console.log(obstaclePool[i]);
 	}
 }
@@ -252,6 +261,28 @@ function updatePlayer(){
 	var zP = player.model.mesh.position.z;
 	var yP = player.model.mesh.position.y;
 
+	// Update player aim
+	if(player.up && player.aim.y < game.height){
+		player.aim.y += player.move
+	}
+	if(player.down && player.aim.y > 10){
+		player.aim.y -= player.move
+	}
+	if(player.left && player.aim.x > -game.width/2){
+		player.aim.x -= player.move
+	}
+	if(player.right && player.aim.x < game.width/2){
+		player.aim.x += player.move
+	}
+	if(player.showAim){
+		aim.mesh.position.z = player.aim.x
+		aim.mesh.position.y = player.aim.y
+	}
+
+
+	// Update Player position
+	player.model.mesh.position.y += (player.aim.y - yP)*0.08;
+	player.model.mesh.position.z += (player.aim.x - zP)*0.08;
 
 	// Reset camera position and aim
   //var camX = 0.02*WIDTH - 127
@@ -305,7 +336,7 @@ function handlekeydown(event){
     		player.right = true
     break;
     case 32:  // Space
-    	createObstacle()
+    	createObstacle();
     break;
   }
 }
@@ -314,12 +345,16 @@ function handlekeyup(event){
 	var keyCode = event.keyCode;
   switch(keyCode){
   	case 87:  //w
+			player.up = false;
   	break;
     case 65:  //a
+    	player.left = false;
     break;
     case 83:  //s
+   		player.down = false;
     break;
     case 68:  //d
+    	player.right = false;
     break;
   }
 }
