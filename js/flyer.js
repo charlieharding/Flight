@@ -129,25 +129,25 @@ function createCheckHolder(){
 	checkHolder = new checkHolder();
 	var numChecks = 10 + game.round * game.difficulty
 	var angle = Math.PI*2 / numChecks
-	//for(var i = 0; i < numChecks; i++){
-	for(var i = 0; i < 1; i++){
-		var a = angle*numChecks
+	for(var i = 0; i < numChecks; i++){
+		var a = angle*i
 		createCheck(a, i);
 	}
-	
-	//createCheck();
 }
 
-function createCheck(){
+function createCheck(a, i){
 	var z = (Math.random() * (game.width - 20)) - (game.width/2 - 20)
 	check = new Check();
-	check.mesh.position.y += Math.random()*((1000+game.height) - 1010) + 1010
-	check.mesh.position.z = Math.random()*(game.width) - game.width/2
-	//check.mesh.position.x = +400;
+	//check.mesh.rotation.z = a
+	//console.log(a)
+	var height = Math.random()*((game.height - 40) + 20) // How high off the ground to appear
+	var width = Math.random()*(game.width) - game.width/2 // How far left/right to appear
+	check.mesh.position.y += height + 1010
+	check.mesh.position.z += width
+
 	check.mesh.rotation.y = Math.random() * Math.PI*2
 	checkPool.push(check)
 	checkHolder.mesh.add(check.mesh)
-	//scene.add( check.mesh );
 }
 
 function createAim(){
@@ -176,8 +176,8 @@ function removeEntity(object) {
 
 var checkHolder = function (){
   this.mesh = new THREE.Object3D();
-  //this.ennemiesInUse = [];
   this.mesh.position.y -= 1000;
+  this.mesh.rotation.z = -(Math.PI/5)
   scene.add(this.mesh)
 }
 
@@ -323,12 +323,12 @@ function updateDistance(){
 }
 
 function updateObstacles(){
-	//console.log(checkHolder.mesh.position.x);
 	checkHolder.mesh.rotation.z += game.speed/10;
 	for(i=0; i < checkPool.length; i++){
-		//console.log(checkPool[i].matrixWorld.multiplyVector3( new THREE.Vector3() ))
-		//console.log(checkPool[i].mesh.matrixWorld.multiplyVector3( new THREE.Vector3() ))
-		console.log(checkPool[i].mesh.getWorldPosition());
+		//console.log(checkPool[i].mesh.getWorldPosition());
+		if(checkPool[i].mesh.getWorldPosition().x < -30 ){
+			checkPool[i].mesh.material.color.setHex( Colors.red );
+		}
 	}
 }
 
