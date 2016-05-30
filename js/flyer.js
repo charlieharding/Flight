@@ -2,6 +2,8 @@
 var Colors = {
 	purple:0x985AA6,
 	blue:0x6B839E,
+	green:0x72D67D,
+	red:0xD67F72,
 	pink:0xA6B5C5,
 };
 
@@ -10,6 +12,8 @@ var Colors = {
 // GAME VARIABLES
 var game = {
 	distance: 0,
+	round: 1,
+	difficulty: 2,
 	speed: .008,
 	rate: .000001,
 	width: 110,
@@ -25,7 +29,7 @@ var player = {};
 var deltaTime = 0;
 var newTime = new Date().getTime();
 var oldTime = new Date().getTime();
-var obstaclePool = [];
+var checkPool = [];
 
 // SCENE VARIABLES
 var scene, camera, fieldOfView, aspectRatio, nearPlane, farPlane, HEIGHT, WIDTH, renderer, container, aspect, d;
@@ -84,7 +88,6 @@ function createLights() {
 	
 	// Allow shadow casting 
 	shadowLight.castShadow = true
-	shadowLight.shadowCameraVisible = true;
 
 	// define the visible area of the projected shadow
 	shadowLight.shadow.camera.left = -100;
@@ -122,14 +125,29 @@ function createPlayer(){
   scene.add(player.model.mesh);
 }
 
-function createObstacle(){
+function createCheckHolder(){
+	checkHolder = new checkHolder();
+	var numChecks = 10 + game.round * game.difficulty
+	var angle = Math.PI*2 / numChecks
+	//for(var i = 0; i < numChecks; i++){
+	for(var i = 0; i < 1; i++){
+		var a = angle*numChecks
+		createCheck(a, i);
+	}
+	
+	//createCheck();
+}
+
+function createCheck(){
 	var z = (Math.random() * (game.width - 20)) - (game.width/2 - 20)
-	obs = new Obstacle();
-	obs.mesh.position.z = z;
-	obs.mesh.position.x = +400;
-	obs.mesh.rotation.y = Math.random() * Math.PI*2
-	obstaclePool.push(obs)
-	scene.add( obs.mesh );
+	check = new Check();
+	check.mesh.position.y += Math.random()*((1000+game.height) - 1010) + 1010
+	check.mesh.position.z = Math.random()*(game.width) - game.width/2
+	//check.mesh.position.x = +400;
+	check.mesh.rotation.y = Math.random() * Math.PI*2
+	checkPool.push(check)
+	checkHolder.mesh.add(check.mesh)
+	//scene.add( check.mesh );
 }
 
 function createAim(){
@@ -155,9 +173,17 @@ function removeEntity(object) {
 // MODELS
 //
 
-var Obstacle = function(){
-	var geom = new THREE.TetrahedronGeometry(8,1);
-  var mat = new THREE.MeshPhongMaterial({color:Colors.pink, shading:THREE.FlatShading});
+
+var checkHolder = function (){
+  this.mesh = new THREE.Object3D();
+  //this.ennemiesInUse = [];
+  this.mesh.position.y -= 1000;
+  scene.add(this.mesh)
+}
+
+var Check = function(){
+	var geom = new THREE.TetrahedronGeometry(6,1);
+  var mat = new THREE.MeshPhongMaterial({color:Colors.green, transparent:true, opacity:.4, shading:THREE.FlatShading,});
   this.mesh = new THREE.Mesh(geom,mat);
 }
 
@@ -171,7 +197,7 @@ var Ground = function(){
 	var geo = new THREE.CylinderGeometry( 1000, 1000, 600, 64 );
   var mat = new THREE.MeshPhongMaterial({color:Colors.blue, shading:THREE.FlatShading});
 	this.mesh = new THREE.Mesh( geo, mat );
-	this.mesh.receiveShadow = true; 
+	this.mesh.receiveShadow = true;
 	this.mesh.position.y -= 1000;
 	this.mesh.rotation.x += Math.PI/2
 }
@@ -297,9 +323,12 @@ function updateDistance(){
 }
 
 function updateObstacles(){
-	for (var i = 0; i < obstaclePool.length; i++) {
-  	obstaclePool[i].mesh.position.x -= 10;
-  	//console.log(obstaclePool[i]);
+	//console.log(checkHolder.mesh.position.x);
+	checkHolder.mesh.rotation.z += game.speed/10;
+	for(i=0; i < checkPool.length; i++){
+		//console.log(checkPool[i].matrixWorld.multiplyVector3( new THREE.Vector3() ))
+		//console.log(checkPool[i].mesh.matrixWorld.multiplyVector3( new THREE.Vector3() ))
+		console.log(checkPool[i].mesh.getWorldPosition());
 	}
 }
 
@@ -388,7 +417,7 @@ function handlekeydown(event){
     		player.right = true
     break;
     case 32:  // Space
-    	createObstacle();
+    	createCheck();
     break;
   }
 }
@@ -437,6 +466,7 @@ function init() {
 	createGround();
 	createTerrain();
 	createPlayer();
+	createCheckHolder();
 	document.addEventListener('keydown', handlekeydown, false);
 	document.addEventListener('keyup', handlekeyup, false);
 	loop();
