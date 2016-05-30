@@ -12,7 +12,7 @@ var game = {
 	distance: 0,
 	speed: .008,
 	rate: .000001,
-	width: 150,
+	width: 110,
 	height: 90,
 	gravity: .6
 }
@@ -80,18 +80,19 @@ function createLights() {
 	ambientLight = new THREE.AmbientLight(0xB8BBBF, .5);
 	
 	// Set the direction of the light  
-	shadowLight.position.set(200, 500, 100);
+	shadowLight.position.set(200, 500, 250);
 	
 	// Allow shadow casting 
 	shadowLight.castShadow = true
+	shadowLight.shadowCameraVisible = true;
 
 	// define the visible area of the projected shadow
 	shadowLight.shadow.camera.left = -100;
-	shadowLight.shadow.camera.right = 80;
-	shadowLight.shadow.camera.top = 100;
-	shadowLight.shadow.camera.bottom = -100;
-	shadowLight.shadow.camera.near = 400;
-	shadowLight.shadow.camera.far = 600;
+	shadowLight.shadow.camera.right = 100;
+	shadowLight.shadow.camera.top = 150;
+	shadowLight.shadow.camera.bottom = -50;
+	shadowLight.shadow.camera.near = 500;
+	shadowLight.shadow.camera.far = 700;
 
 	// Define the resolution of the shadow; 
 	shadowLight.shadow.mapSize.width = 2048;
@@ -199,7 +200,6 @@ var Hill = function(val){
 	var v2 = Math.random() * (val*.1) + val*.1
 
 	this.mesh = new THREE.Object3D();
-	
 	var geom1 = new THREE.BoxGeometry( w1,h1,w1);
 	geom1.vertices[0].y -= v1;
 	geom1.vertices[4].y += v1;
@@ -207,6 +207,7 @@ var Hill = function(val){
 	geom1.vertices[4].z += v2;
 	var mat1 = new THREE.MeshPhongMaterial({color:Colors.blue});
 	var m1 = new THREE.Mesh( geom1, mat1 );
+	m1.receiveShadow = true; 
 	m1.position.z += (game.width/2) + w1 + Math.random()*(game.width*.1)
 	m1.position.y += (1000 + (h1/2)*.9)
 	m1.rotation.y += Math.random()*(Math.PI*2)
@@ -220,6 +221,7 @@ var Hill = function(val){
 	geom2.vertices[4].z += v2;
 	var mat2 = new THREE.MeshPhongMaterial({color:Colors.blue});
 	var m2 = new THREE.Mesh( geom2, mat2 );
+	m2.receiveShadow = true; 
 	m2.position.z -= ((game.width/2) + w2 + Math.random()*(game.width*.1))
 	m2.position.y += (1000 + (h2/2)*.9)
 	m2.rotation.y += Math.random()*(Math.PI*2)	
@@ -308,15 +310,15 @@ function updatePlayer(){
 
 	// Update player aim
 	if(player.up && player.aim.y < game.height){
-		player.aim.y += player.move
+		player.aim.y += player.move*0.5
 	}
 	if(player.down && player.aim.y > 10){
-		player.aim.y -= player.move
+		player.aim.y -= player.move*1.2
 	}
-	if(player.left && player.aim.x > -game.width/2){
+	if(player.left && player.aim.x > -(game.width/2 +20)){
 		player.aim.x -= player.move
 	}
-	if(player.right && player.aim.x < game.width/2){
+	if(player.right && player.aim.x < game.width/2 +20){
 		player.aim.x += player.move
 	}
 	if(player.showAim){
