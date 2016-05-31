@@ -458,15 +458,34 @@ function handlekeyup(event){
 }
 
 function handleOrientation(event) {
-	var x = event.alpha;  // In degree in the range [-180,180]
+	var z = event.alpha;  // In degree in the range [-180,180]
 	var x = event.beta;  // In degree in the range [-180,180]
   var y = event.gamma; // In degree in the range [-90,90]
-  output.innerHTML += "alpha: " + y + "\n";
-  console.innerHTML = "beta : " + x + "\n";
-  console.innerHTML += "gamma: " + y + "\n";
 
-  if(player.right){
-    player.right = false;
+  console.innerHTML = "alpha: " + Math.round(z*100)/100 + "\n";
+  console.innerHTML += "beta : " + Math.round(x*100)/100 + "\n";
+  console.innerHTML += "gamma: " + Math.round(y*100)/100 + "\n";
+    
+  if(x > 10 && x < 50){
+  	player.right = true;
+  	player.left = false;
+  }else if(x < -10 && x > -50){
+  	player.right = false;
+  	player.left = true;
+  }else{
+  	player.right = false;
+  	player.left = false;
+  }
+
+  if(y > -60 && y < -45){
+  	player.up = true;
+  	player.down = false;
+  }else if(y > -35 && y < -10){
+  	player.up = false;
+  	player.down = true;
+  }else{
+  	player.up = false;
+  	player.down = false;
   }
 }
 
@@ -500,7 +519,7 @@ function init() {
 	console = document.querySelector('.console');
 	document.addEventListener('keydown', handlekeydown, false);
 	document.addEventListener('keyup', handlekeyup, false);
-	document.addEventListener('deviceorientation', handleOrientation);
+	window.addEventListener('deviceorientation', handleOrientation);
 	loop();
 
 }
