@@ -12,13 +12,15 @@ var Colors = {
 // GAME VARIABLES
 var game = {
 	distance: 0,
+	time: 0,
 	round: 1,
 	difficulty: 2,
 	speed: .008,
 	rate: .000001,
 	width: 110,
 	height: 90,
-	gravity: .6
+	gravity: .6,
+	hoopDia: 16
 }
 var tilt = {
 	// Orientaition of the phone
@@ -37,6 +39,7 @@ var player = {};
 var deltaTime = 0;
 var newTime = new Date().getTime();
 var oldTime = new Date().getTime();
+var checkHolder;
 var checkPool = [];
 
 // SCENE VARIABLES
@@ -62,7 +65,7 @@ function createScene() {
     aspectRatio,
     nearPlane,
     farPlane
-    );
+   );
   scene.fog = new THREE.Fog(0xDFE9F2, 0,900);
 
   // Set camera x based on screen width
@@ -110,7 +113,7 @@ function createLights() {
 	shadowLight.shadow.mapSize.height = 2048;
 	
 	scene.add(ambientLight);
-	scene.add(hemisphereLight);  
+	scene.add(hemisphereLight);
 	scene.add(shadowLight);
 }
 
@@ -131,10 +134,11 @@ function createPlayer(){
   player.aim = {x:player.model.mesh.position.z, y:player.model.mesh.position.y};
   if(player.showAim){createAim();} // Make the player's aim visible
   scene.add(player.model.mesh);
+  //var help = new Help();
 }
 
 function createCheckHolder(){
-	checkHolder = new checkHolder();
+	checkHolder = new CheckHolder();
 	var numChecks = 10 + game.round * game.difficulty
 	var angle = Math.PI*2 / numChecks
 	for(var i = 0; i < numChecks; i++){
@@ -184,7 +188,7 @@ function removeEntity(object) {
 //
 
 
-var checkHolder = function (){
+var CheckHolder = function (){
   this.mesh = new THREE.Object3D();
   this.mesh.position.y -= 1000;
   this.mesh.rotation.z = -(Math.PI/8)
@@ -193,9 +197,20 @@ var checkHolder = function (){
 
 var Check = function(){
   //var geom = new THREE.TetrahedronGeometry(6,1);
-  var geom = new  THREE.TorusGeometry( 20, 2, 8, 24 );
+  var geom = new  THREE.TorusGeometry( game.hoopDia, 1, 8, 24 );
   var mat = new THREE.MeshPhongMaterial({color:Colors.purple, transparent:true, opacity:.8, shading:THREE.FlatShading,});
   this.mesh = new THREE.Mesh(geom,mat);
+}
+
+var Help = function(){
+  var geom = new THREE.BoxGeometry( 100,1,100,1,1,1 );
+  var mat = new THREE.MeshPhongMaterial({color:Colors.purple, transparent:true, opacity:.2, shading:THREE.FlatShading,});
+  this.mesh = new THREE.Mesh(geom,mat);
+  this.mesh.position.x = -25;
+  //this.mesh.position.x = -45;
+  this.mesh.position.y = 0;
+  this.mesh.rotation.z = Math.PI/2;
+  scene.add(this.mesh)
 }
 
 var Aim = function(){
@@ -322,6 +337,12 @@ var Van = function(){
 
 	this.mesh.add(rwing);
 
+	// Hit box
+	var hitGeo = new THREE.BoxGeometry( 20,4,14,1,1,1 );
+  var hitMat = new THREE.MeshPhongMaterial({color:Colors.green, transparent:true, opacity:.4, shading:THREE.FlatShading,});
+	var hitbox = new THREE.Mesh( hitGeo, hitMat );
+	hitbox.position.x += 5
+	//this.mesh.add(hitbox);
 }
 
 //
@@ -337,22 +358,34 @@ function updateObstacles(){
 	checkHolder.mesh.rotation.z += game.speed/10;
 	for(i=0; i < checkPool.length; i++){
 		var p = checkPool[i].mesh.getWorldPosition();
-		
 		if(p.y > 0){
-			if(p.x < 20 && p.x > -60){
-				checkPool[i].mesh.material.color.setHex( Colors.red );
-			}else{
-				checkPool[i].mesh.material.color.setHex( Colors.purple );
+			if(p.x < -25 && p.x > -45){
+				//checkPool[i].mesh.material.color.setHex( Colors.red );
+				checkCollision(checkPool[i])
+				//checkPool[i].mesh.material.color.setHex( Colors.red );
+			}else if(p.x < - 45){
+
 			}
 		}
 	}
 }
 
-function checkCollision(vect){
-	//console.log(checkPool[i].mesh.getWorldPosition());
+function checkCollision(obj){
+	//console.log(player.model.mesh.position - obj.mesh.getWorldPosition());
+	var diffPos = player.model.mesh.position.clone().sub(obj.mesh.getWorldPosition().clone());
+  var d = diffPos.length();	//console.log(checkPool[i].mesh.getWorldPosition());
+  if(d <= game.hoopDia/4){
+  	console.log('swish!')
+  }else if(d > game.hoopDia/4 && d <= game.hoopDia/1.5){
+  	console.log('good')
+  }else if(d > game.hoopDia/1.5 && d < game.hoopDia){
+  	console.log('pass')
+  }else{
+  	console.log('miss')
+  }
+
 		//var p = ob.mesh.getWorldPosition();
 	//if(checkPool[i].mesh.getWorldPosition().x < -30 ){
-	//		checkPool[i].mesh.material.color.setHex( Colors.red );
 	//}
 }
 
@@ -360,7 +393,7 @@ function updatePlayer(){
 	var yR = player.model.mesh.rotation.y;
 	var zP = player.model.mesh.position.z;
 	var yP = player.model.mesh.position.y;
-
+	
 	// Update player aim
 	if(player.up && player.aim.y < game.height){
 		player.aim.y += (player.move*0.5) * tilt.y
@@ -469,10 +502,6 @@ function handleOrientation(event) {
 	var x = event.beta;  
   var y = event.gamma; 
 
-  //tilt.z = 
-	//tilt.x =
-  //tilt.y = 
-
   //helpText.innerHTML = "alpha: " + Math.round(z*100)/100 + "\n";
   //helpText.innerHTML += "beta : " + Math.round(x*100)/100 + "\n";
   //helpText.innerHTML += "gamma: " + Math.round(y*100)/100 + "\n";
@@ -528,13 +557,13 @@ function loop(){
 }
 
 function init() {
-
 	createScene();
 	createLights();
 	createGround();
+	createCheckHolder();
 	createTerrain();
 	createPlayer();
-	createCheckHolder();
+
 	helpText = document.querySelector('.helpText');
 	document.addEventListener('keydown', handlekeydown, false);
 	document.addEventListener('keyup', handlekeyup, false);
