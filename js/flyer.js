@@ -20,6 +20,7 @@ var game = {
 	height: 90,
 	gravity: .6
 }
+var console;
 var cam = {
 	x: 0,
 	y: 60,
@@ -456,6 +457,19 @@ function handlekeyup(event){
   }
 }
 
+function handleOrientation(event) {
+	var x = event.alpha;  // In degree in the range [-180,180]
+	var x = event.beta;  // In degree in the range [-180,180]
+  var y = event.gamma; // In degree in the range [-90,90]
+  output.innerHTML += "alpha: " + y + "\n";
+  console.innerHTML = "beta : " + x + "\n";
+  console.innerHTML += "gamma: " + y + "\n";
+
+  if(player.right){
+    player.right = false;
+  }
+}
+
 //
 // GAME LOOP & INITIALISATION
 //
@@ -483,8 +497,10 @@ function init() {
 	createTerrain();
 	createPlayer();
 	createCheckHolder();
+	console = document.querySelector('.console');
 	document.addEventListener('keydown', handlekeydown, false);
 	document.addEventListener('keyup', handlekeyup, false);
+	document.addEventListener('deviceorientation', handleOrientation);
 	loop();
 
 }
