@@ -258,12 +258,30 @@ var Ground = function(){
 	this.mesh = new THREE.Object3D();
 
 	// Create the river bank terrain
-	var geoBank = new THREE.CylinderGeometry( 1000, 1000, 600, 64, 10 );
+	var geoBank = new THREE.CylinderGeometry( 1000, 1000, 800, 50, 5 );
   var matBank = new THREE.MeshPhongMaterial({color:Colors.blue, shading:THREE.FlatShading});
 	var bank = new THREE.Mesh( geoBank, matBank );
 
-	for(var i = 300; i < 400; i++){
-		geoBank.vertices[i].x -= 50;
+	//for(var i = 318; i < 382; i++){
+	for(var i = 101; i < 150; i++){
+		//geoBank.vertices[i].x -= 50;
+		//console.log(geoBank.vertices[i]);
+		var ang = ((Math.PI*2) / 50) * (i%50) // Angle that the vertex is at
+		var dip = (Math.random()*-20 - 23) // How far inward to move the vertex
+		var shift = moveInward(ang, dip)
+		var narrow = (Math.random()*20 + 50) 
+		geoBank.vertices[i].x += shift.x
+		geoBank.vertices[i].z += shift.z
+		geoBank.vertices[i].y -= narrow
+		geoBank.vertices[i+50].x += shift.x
+		geoBank.vertices[i+50].z += shift.z
+		geoBank.vertices[i+50].y += narrow
+		console.log(narrow)
+
+		geoBank.vertices[i-50].y -= 180
+		geoBank.vertices[i+100].y += 180
+		//console.log(Math.sin(ang)*1000, geoBank.vertices[i].x)
+
 	}
 
 	this.mesh.add(bank)
@@ -279,6 +297,17 @@ var Ground = function(){
 	this.mesh.rotation.x += Math.PI/2
 	this.mesh.receiveShadow = true;
 
+}
+
+function moveInward(ang, dip){
+	// Funtion to move a cylinder vertice relative to the center of the cylinder
+	var xVal = Math.sin(ang)*dip
+	var zVal = Math.cos(ang)*dip
+	var out = {
+		x: xVal,
+		z: zVal
+	}
+	return out;
 }
 
 var Terrain = function(){
@@ -302,7 +331,7 @@ var Hill = function(val){
 	var h2 = Math.random() * (val*1 - val/2) + val/2;
 	var w2 = Math.random() * (val*1 - val/2) + val/2;
 	var v1 = Math.random() * (val*.2) - val*.1
-	var v2 = Math.random() * (val*.1) + val*.1
+	var v2 = Math.random() * (val*.2) + val*.2
 
 	this.mesh = new THREE.Object3D();
 	var geom1 = new THREE.BoxGeometry( w1,h1,w1);
