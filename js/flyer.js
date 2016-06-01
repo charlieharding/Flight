@@ -255,12 +255,30 @@ var Aim = function(){
 }
 
 var Ground = function(){
-	var geo = new THREE.CylinderGeometry( 1000, 1000, 600, 64 );
-  var mat = new THREE.MeshPhongMaterial({color:Colors.blue, shading:THREE.FlatShading});
-	this.mesh = new THREE.Mesh( geo, mat );
-	this.mesh.receiveShadow = true;
+	this.mesh = new THREE.Object3D();
+
+	// Create the river bank terrain
+	var geoBank = new THREE.CylinderGeometry( 1000, 1000, 600, 64, 10 );
+  var matBank = new THREE.MeshPhongMaterial({color:Colors.blue, shading:THREE.FlatShading});
+	var bank = new THREE.Mesh( geoBank, matBank );
+
+	for(var i = 300; i < 400; i++){
+		geoBank.vertices[i].x -= 50;
+	}
+
+	this.mesh.add(bank)
+
+	//Create the river
+	var geoWater = new THREE.CylinderGeometry( 980, 980, 600, 64, 1 );
+  var matWater = new THREE.MeshPhongMaterial({color:Colors.green, transparent:true, opacity:.4, shading:THREE.FlatShading});
+	var water = new THREE.Mesh( geoWater, matWater );
+
+	this.mesh.add(water)
+	
 	this.mesh.position.y -= 1000;
 	this.mesh.rotation.x += Math.PI/2
+	this.mesh.receiveShadow = true;
+
 }
 
 var Terrain = function(){
@@ -318,7 +336,7 @@ var Hill = function(val){
 
 var Van = function(){
 	this.mesh = new THREE.Object3D();
-  this.mesh.name = "wing";
+  this.mesh.name = "plane";
 
   // Body
 	var gBody = new THREE.BoxGeometry( 20,4,8,1,1,1 );
