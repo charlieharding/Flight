@@ -15,7 +15,7 @@ var game = {
 	time: 0,
 	round: 1,
 	difficulty: 2,
-	speed: .008,
+	speed: .018,
 	rate: .000001,
 	width: 110,
 	height: 90,
@@ -28,7 +28,6 @@ var tilt = {
 	y: 1, // Gamma
 	z: 1  // Alpha
 }
-var helpText;	// For mobile debugging
 var isMobile = false;
 var cam = {
 	x: 0,
@@ -41,7 +40,10 @@ var newTime = new Date().getTime();
 var oldTime = new Date().getTime();
 var checkHolder;
 var checkPool = [];
-
+var playerVerts = [];
+// UI elements
+var helpText;	// For mobile debugging
+var feedback;	// For mobile debugging
 // SCENE VARIABLES
 var scene, camera, fieldOfView, aspectRatio, nearPlane, farPlane, HEIGHT, WIDTH, renderer, container, aspect, d;
 var hemisphereLight, shadowLight;
@@ -49,6 +51,11 @@ var hemisphereLight, shadowLight;
 //
 // CREATION FUNCTIONS
 //
+
+function createUI(){
+	helpText = document.querySelector('.helpText');
+	feedback = document.querySelector('.feedback');
+}
 
 function createScene() {
 	HEIGHT = window.innerHeight;
@@ -81,6 +88,7 @@ function createScene() {
 	
 	// Enable shadow rendering
 	renderer.shadowMap.enabled = true;
+	// Add renderer to the DOM
 	container = document.getElementById('world');
 	container.appendChild(renderer.domElement);
 
@@ -154,12 +162,16 @@ function createCheck(a){
 	var x = Math.cos(a) * height // Opposite
 	var y = Math.sin(a) * height // Adjacent
 
-	check.mesh.position.y += y
-	check.mesh.position.x += x
-	check.mesh.position.z += width
+	check.mesh.position.y += y;
+	check.mesh.position.x += x;
+	check.mesh.position.z += width;
+	check.mesh.rotation.x = Math.PI/2;
+	check.mesh.rotation.y += a;   // Rotates the hoop so it's axis is perpendicular to the cylinder
 
-	check.mesh.rotation.x = Math.PI/2
-	check.mesh.rotation.y += a   // Rotates the hoop so it's axis is perpendicular to the cylinder
+	check.status = false; // Set to true once the hoop has been passed.
+	check.passState = 0; 			// State to use to check if the hoop is flown through successfully
+	check.angle = a;
+
 	checkPool.push(check)
 	checkHolder.mesh.add(check.mesh)
 }
@@ -200,6 +212,29 @@ var Check = function(){
   var geom = new  THREE.TorusGeometry( game.hoopDia, 1, 8, 24 );
   var mat = new THREE.MeshPhongMaterial({color:Colors.purple, transparent:true, opacity:.8, shading:THREE.FlatShading,});
   this.mesh = new THREE.Mesh(geom,mat);
+}
+
+Check.prototype.passed = function(){
+	this.status = false;
+	switch(this.passState){
+		case 0: 
+			checkFeedback('miss', '#D67F72')
+		break;
+		case 1:
+			checkFeedback('average', '#72D67D')
+		break;
+		case 2:
+			checkFeedback('good', '#72D67D')
+		break;
+		case 3:
+			checkFeedback('swish!', '#72D67D')
+		break;
+	}
+}
+
+Check.prototype.reset = function(){
+	this.status = true;
+	this.passState = 0;
 }
 
 var Help = function(){
@@ -345,6 +380,20 @@ var Van = function(){
 	//this.mesh.add(hitbox);
 }
 
+// UI functions
+
+function checkFeedback(text, color){
+	feedback.innerHTML = text;
+	feedback.style.color = color;
+
+	feedback.style.animation = 'fade .8s';
+
+	time = window.setTimeout(reset, 800);
+	function reset() {
+		feedback.style.animation = '';
+	}
+}
+
 //
 // UPDATE FUNCTIONS
 //
@@ -358,13 +407,16 @@ function updateObstacles(){
 	checkHolder.mesh.rotation.z += game.speed/10;
 	for(i=0; i < checkPool.length; i++){
 		var p = checkPool[i].mesh.getWorldPosition();
-		if(p.y > 0){
-			if(p.x < -25 && p.x > -45){
-				//checkPool[i].mesh.material.color.setHex( Colors.red );
-				checkCollision(checkPool[i])
-				//checkPool[i].mesh.material.color.setHex( Colors.red );
-			}else if(p.x < - 45){
-
+		if(p.x > 0){
+			//checkPool[i].status = true
+			checkPool[i].reset();
+		}
+		if(p.y > 0 && p.x < -25 && p.x > -45){
+			if(checkPool[i].status){checkCollision(checkPool[i])}
+			//checkPool[i].mesh.material.color.setHex( Colors.red );
+		}else if(p.x < -45){
+			if(checkPool[i].status){ 
+				checkPool[i].passed()
 			}
 		}
 	}
@@ -375,13 +427,16 @@ function checkCollision(obj){
 	var diffPos = player.model.mesh.position.clone().sub(obj.mesh.getWorldPosition().clone());
   var d = diffPos.length();	//console.log(checkPool[i].mesh.getWorldPosition());
   if(d <= game.hoopDia/4){
-  	console.log('swish!')
+  	//console.log('swish!')
+  	obj.passState = 3
   }else if(d > game.hoopDia/4 && d <= game.hoopDia/1.5){
-  	console.log('good')
+  	//console.log('good')
+  	if(obj.passState < 2) obj.passState = 2
   }else if(d > game.hoopDia/1.5 && d < game.hoopDia){
-  	console.log('pass')
+  	//console.log('pass')
+  	if(obj.passState < 1) obj.passState = 1
   }else{
-  	console.log('miss')
+  	//console.log('miss')
   }
 
 		//var p = ob.mesh.getWorldPosition();
@@ -545,6 +600,7 @@ function loop(){
 	newTime = new Date().getTime();
   deltaTime = newTime-oldTime;
   oldTime = newTime;
+  game.time++;
 
 	updateDistance();
 	rotateWorld();
@@ -563,13 +619,11 @@ function init() {
 	createCheckHolder();
 	createTerrain();
 	createPlayer();
-
-	helpText = document.querySelector('.helpText');
+	createUI();
 	document.addEventListener('keydown', handlekeydown, false);
 	document.addEventListener('keyup', handlekeyup, false);
 	window.addEventListener('deviceorientation', handleOrientation);
 	loop();
-
 }
 
 // device detection

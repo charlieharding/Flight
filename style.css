@@ -1,0 +1,71 @@
+body, html { 
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+canvas {
+	margin: 0;
+	padding: 0;
+	display: block;
+	top:20px;
+}
+
+#world {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #DFE9F2;
+
+}
+
+.helpText {
+	position: absolute;
+	padding: 20px;
+	display: none;
+}
+
+#ui {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	position: absolute;
+	display: block;
+	top: 0;
+	overflow: hidden;
+}
+
+.feedback {
+	display: block;
+	position: relative;
+	padding: 0;
+	margin: 20vh 0;
+	text-align: center;
+	font-size: 8vmin;
+	font-family: sans-serif;
+	font-weight: bold;
+	color: #72D67D;
+	opacity: 0;
+}
+
+
+
+@keyframes fade {
+  0% {
+    font-size: 5vmin; 
+    opacity:0;
+  }
+  30%{
+  	opacity:.8;
+  }
+  100% {
+    font-size: 12vmin;
+    opacity:0;
+  }
+}
+
+
