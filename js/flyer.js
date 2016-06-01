@@ -273,13 +273,15 @@ var Ground = function(){
 	bank.receiveShadow = true;
 
 	//for(var i = 318; i < 382; i++){
-	for(var i = 101; i < 150; i++){
+	for(var i = 100; i < 150; i++){
 		//geoBank.vertices[i].x -= 50;
 		//console.log(geoBank.vertices[i]);
 		var ang = ((Math.PI*2) / 50) * (i%50) // Angle that the vertex is at
 		var dip = (Math.random()*-20 - 23) // How far inward to move the vertex
 		var shift = moveInward(ang, dip)
 		var narrow = (Math.random()*20 + 50) 
+
+		//Drop the middle segments down and shift them in.
 		geoBank.vertices[i].x += shift.x
 		geoBank.vertices[i].z += shift.z
 		geoBank.vertices[i].y -= narrow
@@ -287,9 +289,20 @@ var Ground = function(){
 		geoBank.vertices[i+50].z += shift.z
 		geoBank.vertices[i+50].y += narrow
 
+		// Bring the next rows out ward in 
 		geoBank.vertices[i-50].y -= 180
 		geoBank.vertices[i+100].y += 180
-		//console.log(Math.sin(ang)*1000, geoBank.vertices[i].x)
+
+		// Raise the outward area of the cylinder
+		var raise = moveInward(ang, 20)
+		geoBank.vertices[i-100].x += raise.x
+		geoBank.vertices[i-100].z += raise.z
+		geoBank.vertices[i-100].y -= 250
+		geoBank.vertices[i+150].x += raise.x
+		geoBank.vertices[i+150].z += raise.z
+		geoBank.vertices[i+150].y += 250
+		console.log(geoBank.vertices[i-100], geoBank.vertices[i+150]);
+
 
 	}
 
@@ -297,6 +310,7 @@ var Ground = function(){
 
 	//Create the river
 	var geoWater = new THREE.CylinderGeometry( 980, 980, 600, 64, 1 );
+  var matWater = new THREE.MeshPhongMaterial({color:Colors.teal, transparent:true, opacity:.6, shading:THREE.FlatShading});
 	var water = new THREE.Mesh( geoWater, matWater );
 
 	this.mesh.add(water)
@@ -334,17 +348,30 @@ var Terrain = function(){
 var Hill = function(val){
 	// Bad duplicate code here, should be replaced by better hill models anyway
 	var h1 = Math.random() * (val*1 - val/2) + val/2;
-	var w1 = Math.random() * (val*1 - val/2) + val/2;
+	var w1 = Math.random() * (val*1.2 - val*.8) + val*.8;
 	var h2 = Math.random() * (val*1 - val/2) + val/2;
-	var w2 = Math.random() * (val*1 - val/2) + val/2;
-	var v1 = Math.random() * (val*.2) - val*.1
-	var v2 = Math.random() * (val*.2) + val*.2
+	var w2 = Math.random() * (val*1.2 - val*.8) + val*.8;
+
+	var top = Math.random() * (w1*.2) + w1*.2
+	var top2 = Math.random() * (w2*.2) + w2*.2
 
 	this.mesh = new THREE.Object3D();
 	var geom1 = new THREE.BoxGeometry( w1,h1,w1);
-	geom1.vertices[4].y += v1;
-	geom1.vertices[4].x += v2;
-	geom1.vertices[4].z += v2;
+
+	// Make a pyramid
+	geom1.vertices[4].z += top
+	geom1.vertices[1].z += top
+	
+	geom1.vertices[0].z -= top
+	geom1.vertices[5].z -= top
+
+	geom1.vertices[4].x += top
+	geom1.vertices[5].x += top
+
+	geom1.vertices[0].x -= top
+	geom1.vertices[1].x -= top
+
+	var mat1 = new THREE.MeshPhongMaterial({color:Colors.pink, shininess: 10, shading:THREE.FlatShading});
 	var m1 = new THREE.Mesh( geom1, mat1 );
 	m1.receiveShadow = true; 
 	m1.position.z += (game.width/2) + w1 + Math.random()*(game.width*.1)
@@ -354,10 +381,19 @@ var Hill = function(val){
 	this.mesh.add(m1)
 
 	var geom2 = new THREE.BoxGeometry( w2,h2,w2);
-	geom2.vertices[0].y -= v1;
-	geom2.vertices[4].y += v1;
-	geom2.vertices[4].x += v2;
-	geom2.vertices[4].z += v2;
+	// Make a pyramid
+	geom2.vertices[4].z += top2
+	geom2.vertices[1].z += top2
+	
+	geom2.vertices[0].z -= top2
+	geom2.vertices[5].z -= top2
+
+	geom2.vertices[4].x += top2
+	geom2.vertices[5].x += top2
+
+	geom2.vertices[0].x -= top2
+	geom2.vertices[1].x -= top2
+	var m2 = new THREE.Mesh( geom2, mat1 );
 	m2.receiveShadow = true; 
 	m2.position.z -= ((game.width/2) + w2 + Math.random()*(game.width*.1))
 	m2.position.y += (1000 + (h2/2)*.9)
