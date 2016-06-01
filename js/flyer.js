@@ -1,10 +1,13 @@
 // COLORS
 var Colors = {
-	purple:0x985AA6,
-	blue:0x6B839E,
-	green:0x72D67D,
-	red:0xD67F72,
-	pink:0xA6B5C5,
+	pink: 0xf87b95,
+	pinkGround: 0xb95a84,
+	pinkLight: 0xa74f80,
+	blue: 0xc7e5fd,
+	teal: 0x5f9abc,
+	purple: 0x985AA6,
+	green: 0x72D67D,
+	red: 0xD67F72,
 };
 
 ///////////////
@@ -73,7 +76,7 @@ function createScene() {
     nearPlane,
     farPlane
    );
-  scene.fog = new THREE.Fog(0xDFE9F2, 0,900);
+  scene.fog = new THREE.Fog(Colors.blue, 0,900);
 
   // Set camera x based on screen width
   camera.position.x = -110
@@ -97,10 +100,16 @@ function createScene() {
 }
 
 function createLights() {
-	hemisphereLight = new THREE.HemisphereLight(0xcad5e3,0x070a0d, .8)
+	hemisphereLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+	hemisphereLight.color.setHSL( 0.6, 1, 0.6 );
+	hemisphereLight.groundColor.setHSL( 0.095, 1, 0.75 );
 	//shadowLight = new THREE.DirectionalLight(0xf3e8ff, .8);
-	shadowLight = new THREE.DirectionalLight(0xDD3B1E3, .7);
-	ambientLight = new THREE.AmbientLight(0xB8BBBF, .5);
+	shadowLight = new THREE.DirectionalLight( 0xffffff, 1 );
+	shadowLight.color.setHSL( 0.1, 1, 0.95 );
+			
+	//shadowLight = new THREE.DirectionalLight(0x6e5b8a, .7);
+	//ambientLight = new THREE.AmbientLight(0x5b4e75, .4);
+	ambientLight = new THREE.AmbientLight(0x655075, .5);
 	
 	// Set the direction of the light  
 	shadowLight.position.set(200, 500, 250);
@@ -259,8 +268,9 @@ var Ground = function(){
 
 	// Create the river bank terrain
 	var geoBank = new THREE.CylinderGeometry( 1000, 1000, 800, 50, 5 );
-  var matBank = new THREE.MeshPhongMaterial({color:Colors.blue, shading:THREE.FlatShading});
+  var matBank = new THREE.MeshPhongMaterial({color:Colors.pink, shininess: 10, shading:THREE.FlatShading});
 	var bank = new THREE.Mesh( geoBank, matBank );
+	bank.receiveShadow = true;
 
 	//for(var i = 318; i < 382; i++){
 	for(var i = 101; i < 150; i++){
@@ -276,7 +286,6 @@ var Ground = function(){
 		geoBank.vertices[i+50].x += shift.x
 		geoBank.vertices[i+50].z += shift.z
 		geoBank.vertices[i+50].y += narrow
-		console.log(narrow)
 
 		geoBank.vertices[i-50].y -= 180
 		geoBank.vertices[i+100].y += 180
@@ -288,14 +297,12 @@ var Ground = function(){
 
 	//Create the river
 	var geoWater = new THREE.CylinderGeometry( 980, 980, 600, 64, 1 );
-  var matWater = new THREE.MeshPhongMaterial({color:Colors.green, transparent:true, opacity:.4, shading:THREE.FlatShading});
 	var water = new THREE.Mesh( geoWater, matWater );
 
 	this.mesh.add(water)
 	
 	this.mesh.position.y -= 1000;
 	this.mesh.rotation.x += Math.PI/2
-	this.mesh.receiveShadow = true;
 
 }
 
@@ -335,11 +342,9 @@ var Hill = function(val){
 
 	this.mesh = new THREE.Object3D();
 	var geom1 = new THREE.BoxGeometry( w1,h1,w1);
-	geom1.vertices[0].y -= v1;
 	geom1.vertices[4].y += v1;
 	geom1.vertices[4].x += v2;
 	geom1.vertices[4].z += v2;
-	var mat1 = new THREE.MeshPhongMaterial({color:Colors.blue});
 	var m1 = new THREE.Mesh( geom1, mat1 );
 	m1.receiveShadow = true; 
 	m1.position.z += (game.width/2) + w1 + Math.random()*(game.width*.1)
@@ -353,8 +358,6 @@ var Hill = function(val){
 	geom2.vertices[4].y += v1;
 	geom2.vertices[4].x += v2;
 	geom2.vertices[4].z += v2;
-	var mat2 = new THREE.MeshPhongMaterial({color:Colors.blue});
-	var m2 = new THREE.Mesh( geom2, mat2 );
 	m2.receiveShadow = true; 
 	m2.position.z -= ((game.width/2) + w2 + Math.random()*(game.width*.1))
 	m2.position.y += (1000 + (h2/2)*.9)
