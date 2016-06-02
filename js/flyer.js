@@ -1,10 +1,10 @@
 // COLORS
 var Colors = {
-	pink: 0xf87b95,
+	pink: 0xed8a8b,
 	pinkGround: 0xb95a84,
 	pinkLight: 0xa74f80,
 	blue: 0xc7e5fd,
-	teal: 0x5f9abc,
+	teal: 0x70b5cc,
 	purple: 0x985AA6,
 	green: 0x72D67D,
 	red: 0xD67F72,
@@ -276,8 +276,8 @@ var Ground = function(){
 	for(var i = 100; i < 150; i++){
 		//geoBank.vertices[i].x -= 50;
 		//console.log(geoBank.vertices[i]);
-		var ang = ((Math.PI*2) / 50) * (i%50) // Angle that the vertex is at
-		var dip = (Math.random()*-20 - 23) // How far inward to move the vertex
+		var ang = ((Math.PI*2) / 50) * (i%50) // Angle that the vertices is at
+		var dip = (Math.random()*-20 - 23) // How far inward to move the vertices
 		var shift = moveInward(ang, dip)
 		var narrow = (Math.random()*20 + 50) 
 
@@ -301,17 +301,23 @@ var Ground = function(){
 		geoBank.vertices[i+150].x += raise.x
 		geoBank.vertices[i+150].z += raise.z
 		geoBank.vertices[i+150].y += 250
-		console.log(geoBank.vertices[i-100], geoBank.vertices[i+150]);
-
 
 	}
 
 	this.mesh.add(bank)
 
 	//Create the river
-	var geoWater = new THREE.CylinderGeometry( 980, 980, 600, 64, 1 );
-  var matWater = new THREE.MeshPhongMaterial({color:Colors.teal, transparent:true, opacity:.6, shading:THREE.FlatShading});
+	var geoWater = new THREE.CylinderGeometry( 980, 980, 100, 100, 3 );
+  var matWater = new THREE.MeshPhongMaterial({color:Colors.teal, transparent:true, opacity:.62, shininess: 60, shading:THREE.FlatShading});
 	var water = new THREE.Mesh( geoWater, matWater );
+
+	for(var i = 100; i < 300; i++){
+		var ang = ((Math.PI*2) / 50) * (i%50) // Angle that the vertices is at
+		var dip = (Math.random() * 6 - 3) // Randomise how much to shift the vertices
+		var shift = moveInward(ang, dip)
+		geoWater.vertices[i].x += shift.x
+		geoWater.vertices[i].z += shift.z
+	}
 
 	this.mesh.add(water)
 	
@@ -575,6 +581,16 @@ function rotateWorld(){
 	ter.mesh.rotation.z += game.speed/10;
 }
 
+function moveWater(){
+	for(var i = 100; i < 300; i++){
+		var ang = ((Math.PI*2) / 50) * (i%50) // Angle that the vertices is at
+		var dip = (Math.random() * 6 - 3) // Randomise how much to shift the vertices
+		var shift = moveInward(ang, dip)
+		geoWater.vertices[i].x += shift.x
+		geoWater.vertices[i].z += shift.z
+	}
+}
+
 //
 // EVENT HANDLERS
 //
@@ -690,6 +706,7 @@ function loop(){
 
 	updateDistance();
 	rotateWorld();
+	//moveWater();
 	updatePlayer();
   updateCam();
 	updateObstacles();
