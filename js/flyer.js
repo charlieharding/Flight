@@ -15,11 +15,13 @@ var Colors = {
 // GAME VARIABLES
 var game = {
 	distance: 0,
+	status: 'paused',
+	score: 0,
 	time: 0,
 	round: 1,
 	difficulty: 2,
-	speed: .018,
-	rate: .000001,
+	speed: .0008,
+	rate: 0,
 	width: 110,
 	height: 90,
 	gravity: .6,
@@ -47,6 +49,7 @@ var playerVerts = [];
 // UI elements
 var helpText;	// For mobile debugging
 var feedback;	// For mobile debugging
+var startButton;	// Button to initiate game
 // SCENE VARIABLES
 var scene, camera, fieldOfView, aspectRatio, nearPlane, farPlane, HEIGHT, WIDTH, renderer, container, aspect, d;
 var hemisphereLight, shadowLight;
@@ -58,6 +61,8 @@ var hemisphereLight, shadowLight;
 function createUI(){
 	helpText = document.querySelector('.helpText');
 	feedback = document.querySelector('.feedback');
+	startButton = document.getElementById("start");
+	startButton.onclick = startGame;
 }
 
 function createScene() {
@@ -227,16 +232,16 @@ Check.prototype.passed = function(){
 	this.status = false;
 	switch(this.passState){
 		case 0: 
-			checkFeedback('miss', '#D67F72')
+			checkFeedback('MISS', '#D67F72')
 		break;
 		case 1:
-			checkFeedback('average', '#72D67D')
+			checkFeedback('OK', '#72D67D')
 		break;
 		case 2:
-			checkFeedback('good', '#72D67D')
+			checkFeedback('GOOD', '#72D67D')
 		break;
 		case 3:
-			checkFeedback('swish!', '#72D67D')
+			checkFeedback('SWISH!', '#72D67D')
 		break;
 	}
 }
@@ -693,6 +698,16 @@ function handleOrientation(event) {
   }
 }
 
+function startGame(){
+	game.status = "playing";
+	container.className = "";
+	startButton.style.opacity = 0;
+	game.speed = 0.018;
+	game.rate = .000002;
+	document.addEventListener('keydown', handlekeydown, false);
+	document.addEventListener('keyup', handlekeyup, false);
+}
+
 //
 // GAME LOOP & INITIALISATION
 //
@@ -703,6 +718,13 @@ function loop(){
   deltaTime = newTime-oldTime;
   oldTime = newTime;
   game.time++;
+
+  switch(game.status){
+  	case "playing":
+  	break;
+  	case "paused": 
+  	break
+  }
 
 	updateDistance();
 	rotateWorld();
@@ -723,8 +745,6 @@ function init() {
 	createTerrain();
 	createPlayer();
 	createUI();
-	document.addEventListener('keydown', handlekeydown, false);
-	document.addEventListener('keyup', handlekeyup, false);
 	window.addEventListener('deviceorientation', handleOrientation);
 	loop();
 }

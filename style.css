@@ -4,7 +4,7 @@ body, html {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	font-family: "aktiv-grotesk",sans-serif;
+	font-family: "allumi-std",sans-serif;
 }
 
 canvas {
@@ -12,6 +12,10 @@ canvas {
 	padding: 0;
 	display: block;
 	top:20px;
+}
+
+.blur{
+	-webkit-filter: blur(4px);
 }
 
 #world {
@@ -40,13 +44,36 @@ canvas {
 	overflow: hidden;
 }
 
+.start-button {
+	background: rgba(165, 110, 249, 0.3);
+	padding: 20px 40px;
+	text-align: center;
+	font-family: "allumi-std",sans-serif;
+	font-style: normal;
+	font-weight: 400;
+	font-size: 48px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  text-decoration: none;
+  transition: all .3s;
+}
+
+.start-button:hover {
+	background: rgba(165, 110, 249, 0.6);
+}
+
+
+
 .feedback {
 	display: block;
 	position: relative;
 	padding: 0;
 	text-align: center;
 	font-size: 8vmin;
-	font-weight: 600;
+	font-weight: 100;
 	color: #72D67D;
 	opacity: 0;
 }
