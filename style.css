@@ -78,7 +78,49 @@ canvas {
 	opacity: 0;
 }
 
+#meter {
+	width: 200px;
+	height: 8px;
+	margin: 2vh 0 0 0;
+	position: absolute;
+	left: 50%;
+  transform: translateX(-50%);
+	background: rgba(255, 255, 255, 0.3);
+	border-radius: 4px;
+}
 
+#meter::after {
+	content: "";
+	background-color: #888888;
+	height: 12px;
+	position: absolute;
+	top: -2px;
+	left: 50%;
+	width: 1px;
+	display: block;
+}
+
+#bar {
+	height: 8px;
+	position: absolute;
+	width: 0px;
+
+}
+
+.positive {
+	background-color: #72D67D;
+	border-radius: 0 4px 4px 0;
+	left: 50%;
+	transition: width .3s ease-out;
+
+}
+
+.negative {
+	background-color: #D67F72;
+	border-radius: 4px 0 0 4px;
+	right: 50%;
+	transition: width .3s ease-out;
+}
 
 @keyframes fade {
   0% {

@@ -28,7 +28,7 @@ var game = {
 	hoopDia: 16
 }
 var tilt = {
-	// Orientaition of the phone
+	// Orientation of the phone
 	x: 1, // Beta
 	y: 1, // Gamma
 	z: 1  // Alpha
@@ -39,7 +39,15 @@ var cam = {
 	y: 60,
 	z: 0
 }
-var player = {};
+var player = {
+	move: 2, // How fast the player can move the aim.
+	yaw: 0, // Not really needed
+	roll: 0,
+	pitch: 0,
+	health: 0,
+	lives: 1,
+	showAim: false
+};
 var deltaTime = 0;
 var newTime = new Date().getTime();
 var oldTime = new Date().getTime();
@@ -47,9 +55,7 @@ var checkHolder;
 var checkPool = [];
 var playerVerts = [];
 // UI elements
-var helpText;	// For mobile debugging
-var feedback;	// For mobile debugging
-var startButton;	// Button to initiate game
+var helpText, feedback, bar, startButton;
 // SCENE VARIABLES
 var scene, camera, fieldOfView, aspectRatio, nearPlane, farPlane, HEIGHT, WIDTH, renderer, container, aspect, d;
 var hemisphereLight, shadowLight;
@@ -61,6 +67,7 @@ var hemisphereLight, shadowLight;
 function createUI(){
 	helpText = document.querySelector('.helpText');
 	feedback = document.querySelector('.feedback');
+	bar = document.getElementById("bar");
 	startButton = document.getElementById("start");
 	startButton.onclick = startGame;
 }
@@ -145,11 +152,6 @@ function createGround(){
 }
 
 function createPlayer(){
-	player.move = 2; // How fast the player can move the aim.
-	player.yaw = 0;
-	player.roll = 0;
-	player.pitch = 0;
-	player.showAim = false;
   player.model = new Van();
   player.model.mesh.position.y = +15;
   player.model.mesh.position.x = -40;
@@ -231,16 +233,19 @@ var Check = function(){
 Check.prototype.passed = function(){
 	this.status = false;
 	switch(this.passState){
-		case 0: 
+		case 0:
+			updateHealth(-20)
 			checkFeedback('MISS', '#D67F72')
 		break;
 		case 1:
 			checkFeedback('OK', '#72D67D')
 		break;
 		case 2:
+			updateHealth(3)
 			checkFeedback('GOOD', '#72D67D')
 		break;
 		case 3:
+			updateHealth(5)
 			checkFeedback('SWISH!', '#72D67D')
 		break;
 	}
@@ -482,9 +487,7 @@ var Van = function(){
 function checkFeedback(text, color){
 	feedback.innerHTML = text;
 	feedback.style.color = color;
-
 	feedback.style.animation = 'fade .8s';
-
 	time = window.setTimeout(reset, 800);
 	function reset() {
 		feedback.style.animation = '';
@@ -497,48 +500,42 @@ function checkFeedback(text, color){
 
 function updateDistance(){
   game.distance += game.speed
-  game.speed += game.rate
+  if(game.status == "playing"){
+  	game.speed += game.rate;
+  	player.move += game.rate*10; // Speed up player to match faster terrain
+  }
 }
 
 function updateObstacles(){
 	checkHolder.mesh.rotation.z += game.speed/10;
-	for(i=0; i < checkPool.length; i++){
-		var p = checkPool[i].mesh.getWorldPosition();
-		if(p.x > 0){
-			//checkPool[i].status = true
-			checkPool[i].reset();
-		}
-		if(p.y > 0 && p.x < -25 && p.x > -45){
-			if(checkPool[i].status){checkCollision(checkPool[i])}
-			//checkPool[i].mesh.material.color.setHex( Colors.red );
-		}else if(p.x < -45){
-			if(checkPool[i].status){ 
-				checkPool[i].passed()
+	if(game.status == "playing"){
+		for(i=0; i < checkPool.length; i++){
+			var p = checkPool[i].mesh.getWorldPosition();
+			if(p.x > 0){
+				checkPool[i].reset();
+			}
+			if(p.y > 0 && p.x < -25 && p.x > -45){
+				if(checkPool[i].status){checkCollision(checkPool[i])}
+			}else if(p.x < -45){
+				if(checkPool[i].status){ 
+					checkPool[i].passed()
+				}
 			}
 		}
 	}
 }
 
 function checkCollision(obj){
-	//console.log(player.model.mesh.position - obj.mesh.getWorldPosition());
 	var diffPos = player.model.mesh.position.clone().sub(obj.mesh.getWorldPosition().clone());
-  var d = diffPos.length();	//console.log(checkPool[i].mesh.getWorldPosition());
+  var d = diffPos.length();
   if(d <= game.hoopDia/4){
-  	//console.log('swish!')
   	obj.passState = 3
   }else if(d > game.hoopDia/4 && d <= game.hoopDia/1.5){
-  	//console.log('good')
   	if(obj.passState < 2) obj.passState = 2
   }else if(d > game.hoopDia/1.5 && d < game.hoopDia){
-  	//console.log('pass')
   	if(obj.passState < 1) obj.passState = 1
   }else{
-  	//console.log('miss')
   }
-
-		//var p = ob.mesh.getWorldPosition();
-	//if(checkPool[i].mesh.getWorldPosition().x < -30 ){
-	//}
 }
 
 function updatePlayer(){
@@ -581,19 +578,33 @@ function updateCam(){
 	camera.updateProjectionMatrix();
 }
 
+function updateHealth(delt){
+	// Change to player health is set in the check point function Check.passed();
+	if(player.health > 100 && delt < 0){
+		player.health = 100 + delt;
+	}else{
+		player.health += delt;
+	}
+	if(player.health < -100 || player.health > 100){
+		bar.style.width = "100px"
+	}else{
+		bar.style.width = Math.abs(player.health)+"px"
+	}
+	if(player.health < -100){
+		// Player has died 
+		 console.log('player ded :(')
+	}else if(player.health >= -100 && player.health < 0){
+		// Player is in the red
+		bar.className = "negative";
+	}else if(player.health >= 0 && player.health <= 100){
+		// Player is in the green
+		bar.className = "positive";
+	}
+}
+
 function rotateWorld(){
 	ground.mesh.rotation.y += game.speed/10;
 	ter.mesh.rotation.z += game.speed/10;
-}
-
-function moveWater(){
-	for(var i = 100; i < 300; i++){
-		var ang = ((Math.PI*2) / 50) * (i%50) // Angle that the vertices is at
-		var dip = (Math.random() * 6 - 3) // Randomise how much to shift the vertices
-		var shift = moveInward(ang, dip)
-		geoWater.vertices[i].x += shift.x
-		geoWater.vertices[i].z += shift.z
-	}
 }
 
 //
@@ -663,11 +674,6 @@ function handleOrientation(event) {
 	var z = event.alpha;  
 	var x = event.beta;  
   var y = event.gamma; 
-
-  //helpText.innerHTML = "alpha: " + Math.round(z*100)/100 + "\n";
-  //helpText.innerHTML += "beta : " + Math.round(x*100)/100 + "\n";
-  //helpText.innerHTML += "gamma: " + Math.round(y*100)/100 + "\n";
-  //helpText.innerHTML = "Mobile: " + isMobile + "\n";
     
   if(x > 10 && x < 50){
   	player.right = true;
@@ -703,7 +709,7 @@ function startGame(){
 	container.className = "";
 	startButton.style.opacity = 0;
 	game.speed = 0.018;
-	game.rate = .000002;
+	game.rate = .000003;
 	document.addEventListener('keydown', handlekeydown, false);
 	document.addEventListener('keyup', handlekeyup, false);
 }
@@ -728,7 +734,6 @@ function loop(){
 
 	updateDistance();
 	rotateWorld();
-	//moveWater();
 	updatePlayer();
   updateCam();
 	updateObstacles();
