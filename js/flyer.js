@@ -68,6 +68,7 @@ function createUI(){
 	helpText = document.querySelector('.helpText');
 	feedback = document.querySelector('.feedback');
 	bar = document.getElementById("bar");
+	meter = document.getElementById("meter");
 	startButton = document.getElementById("start");
 	startButton.onclick = startGame;
 }
@@ -580,26 +581,35 @@ function updateCam(){
 
 function updateHealth(delt){
 	// Change to player health is set in the check point function Check.passed();
-	if(player.health > 100 && delt < 0){
-		player.health = 100 + delt;
+	console.log(player.health)
+	if(player.health + delt > 100){
+		// Stop players's health becoming greater than 100
+		player.health = 100
+	}else if(player.health > -100 && player.health + delt < -100){
+		// Stop player's health dropping below -100 and pulse the bar ui
+		player.health = -100;
+		bar.style.animation = 'pulse .5s infinite';
+	}else if(player.health == -100 && player.health + delt < -100){
+		// Player has died
+		playerDeath();
+		bar.style.animation = ''
 	}else{
 		player.health += delt;
+		bar.style.animation = '';
 	}
-	if(player.health < -100 || player.health > 100){
-		bar.style.width = "100px"
-	}else{
-		bar.style.width = Math.abs(player.health)+"px"
-	}
-	if(player.health < -100){
-		// Player has died 
-		 console.log('player ded :(')
-	}else if(player.health >= -100 && player.health < 0){
+	//if(player.health < -100 || player.health > 100){}
+	bar.style.width = Math.abs(player.health)+"px"
+	if(player.health > -100 && player.health < 0){
 		// Player is in the red
 		bar.className = "negative";
 	}else if(player.health >= 0 && player.health <= 100){
 		// Player is in the green
 		bar.className = "positive";
 	}
+}
+
+function playerDeath(){
+	console.log('player has died');
 }
 
 function rotateWorld(){
@@ -708,6 +718,7 @@ function startGame(){
 	game.status = "playing";
 	container.className = "";
 	startButton.style.opacity = 0;
+	meter.style.opacity = 1;
 	game.speed = 0.018;
 	game.rate = .000003;
 	document.addEventListener('keydown', handlekeydown, false);
@@ -724,14 +735,6 @@ function loop(){
   deltaTime = newTime-oldTime;
   oldTime = newTime;
   game.time++;
-
-  switch(game.status){
-  	case "playing":
-  	break;
-  	case "paused": 
-  	break
-  }
-
 	updateDistance();
 	rotateWorld();
 	updatePlayer();

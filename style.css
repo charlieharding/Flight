@@ -79,6 +79,7 @@ canvas {
 }
 
 #meter {
+	opacity: 0;
 	width: 200px;
 	height: 8px;
 	margin: 2vh 0 0 0;
@@ -87,6 +88,7 @@ canvas {
   transform: translateX(-50%);
 	background: rgba(255, 255, 255, 0.3);
 	border-radius: 4px;
+	transition: opacity .4s;
 }
 
 #meter::after {
@@ -104,7 +106,6 @@ canvas {
 	height: 8px;
 	position: absolute;
 	width: 0px;
-
 }
 
 .positive {
@@ -135,6 +136,18 @@ canvas {
     font-size: 12vmin;
     opacity:0;
     margin: 20vh 0;
+  }
+}
+
+@keyframes pulse {
+	0% {
+    opacity:1;
+  }
+  30%{
+  	opacity:.5;
+  }
+  100% {
+    opacity:1;
   }
 }
 
