@@ -55,7 +55,7 @@ var checkHolder;
 var checkPool = [];
 var playerVerts = [];
 // UI elements
-var helpText, feedback, bar, startButton;
+var ui, score, helpText, feedback, bar, startButton;
 // SCENE VARIABLES
 var scene, camera, fieldOfView, aspectRatio, nearPlane, farPlane, HEIGHT, WIDTH, renderer, container, aspect, d;
 var hemisphereLight, shadowLight;
@@ -69,6 +69,8 @@ function createUI(){
 	feedback = document.querySelector('.feedback');
 	bar = document.getElementById("bar");
 	meter = document.getElementById("meter");
+	ui = document.getElementById("ui");
+	score = document.getElementById("score");
 	startButton = document.getElementById("start");
 	startButton.onclick = startGame;
 }
@@ -236,6 +238,7 @@ Check.prototype.passed = function(){
 	switch(this.passState){
 		case 0:
 			updateHealth(-20)
+			game.speed = game.speed*0.8
 			checkFeedback('MISS', '#D67F72')
 		break;
 		case 1:
@@ -243,10 +246,12 @@ Check.prototype.passed = function(){
 		break;
 		case 2:
 			updateHealth(3)
+			game.speed = game.speed*1.05
 			checkFeedback('GOOD', '#72D67D')
 		break;
 		case 3:
 			updateHealth(5)
+			game.speed = game.speed*1.2
 			checkFeedback('SWISH!', '#72D67D')
 		break;
 	}
@@ -504,6 +509,7 @@ function updateDistance(){
   if(game.status == "playing"){
   	game.speed += game.rate;
   	player.move += game.rate*10; // Speed up player to match faster terrain
+  	updateScore();
   }
 }
 
@@ -519,7 +525,7 @@ function updateObstacles(){
 				if(checkPool[i].status){checkCollision(checkPool[i])}
 			}else if(p.x < -45){
 				if(checkPool[i].status){ 
-					checkPool[i].passed()
+					checkPool[i].passed();
 				}
 			}
 		}
@@ -536,6 +542,7 @@ function checkCollision(obj){
   }else if(d > game.hoopDia/1.5 && d < game.hoopDia){
   	if(obj.passState < 1) obj.passState = 1
   }else{
+  	// Missed
   }
 }
 
@@ -581,7 +588,6 @@ function updateCam(){
 
 function updateHealth(delt){
 	// Change to player health is set in the check point function Check.passed();
-	console.log(player.health)
 	if(player.health + delt > 100){
 		// Stop players's health becoming greater than 100
 		player.health = 100
@@ -606,6 +612,15 @@ function updateHealth(delt){
 		// Player is in the green
 		bar.className = "positive";
 	}
+}
+
+function updateScore(){
+	game.score += game.speed*((player.health+100) / 200) + 0.02
+	console.log(game.rate, game.speed);
+	if(game.time%7 == 0){
+		score.innerHTML = Math.floor(game.score);
+	}
+	
 }
 
 function playerDeath(){
@@ -718,7 +733,7 @@ function startGame(){
 	game.status = "playing";
 	container.className = "";
 	startButton.style.opacity = 0;
-	meter.style.opacity = 1;
+	ui.style.opacity = 1;
 	game.speed = 0.018;
 	game.rate = .000003;
 	document.addEventListener('keydown', handlekeydown, false);
