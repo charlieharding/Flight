@@ -141,6 +141,9 @@ canvas {
     opacity:0;
     margin: 24vh 0;
   }
+  10%{
+  	opacity:1;
+  }
   30%{
   	opacity:1;
   }

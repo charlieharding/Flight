@@ -493,7 +493,7 @@ var Van = function(){
 function checkFeedback(text, color){
 	feedback.innerHTML = text;
 	feedback.style.color = color;
-	feedback.style.animation = 'fade .8s';
+	feedback.style.animation = 'fade .4s';
 	time = window.setTimeout(reset, 800);
 	function reset() {
 		feedback.style.animation = '';
@@ -514,8 +514,8 @@ function updateDistance(){
 }
 
 function updateObstacles(){
-	checkHolder.mesh.rotation.z += game.speed/10;
 	if(game.status == "playing"){
+		checkHolder.mesh.rotation.z += game.speed/10;
 		for(i=0; i < checkPool.length; i++){
 			var p = checkPool[i].mesh.getWorldPosition();
 			if(p.x > 0){
@@ -550,7 +550,8 @@ function updatePlayer(){
 	var yR = player.model.mesh.rotation.y;
 	var zP = player.model.mesh.position.z;
 	var yP = player.model.mesh.position.y;
-	
+
+	var adj = game.speed
 	// Update player aim
 	if(player.up && player.aim.y < game.height){
 		player.aim.y += (player.move*0.5) * tilt.y
@@ -570,9 +571,10 @@ function updatePlayer(){
 	}
 
 	// Update player model position
-	player.model.mesh.position.y += (player.aim.y - yP)*0.08;
-	player.model.mesh.position.z += (player.aim.x - zP)*0.08;
+	player.model.mesh.position.y += (player.aim.y - yP)*(0.08 + adj);
+	player.model.mesh.position.z += (player.aim.x - zP)*(0.08 + adj);
 
+	//console.log((player.aim.y - yP)*0.08, game.speed)
 	// Rotate player model 
 	player.model.mesh.rotation.z = (player.aim.y - yP)*0.04;  // Pitch
 	player.model.mesh.rotation.x = (player.aim.x - zP)*0.05;	// Roll
@@ -616,7 +618,6 @@ function updateHealth(delt){
 
 function updateScore(){
 	game.score += game.speed*((player.health+100) / 200) + 0.02
-	console.log(game.rate, game.speed);
 	if(game.time%7 == 0){
 		score.innerHTML = Math.floor(game.score);
 	}
@@ -624,7 +625,27 @@ function updateScore(){
 }
 
 function playerDeath(){
-	console.log('player has died');
+	game.status = "dead";
+	// Reset player
+	document.removeEventListener('keydown', handlekeydown, false);
+	document.removeEventListener('keyup', handlekeyup, false);
+	player.up = false;
+  player.down = false;
+  player.left = false;
+  player.right = false;
+  player.aim.y = 15;
+  player.aim.x = 0;
+
+  // Stop game
+	game.speed = .0008;
+	game.rate = 0;
+
+	// Change UI
+	container.className = "blur";
+	startButton.innerHTML = 'replay'
+		//.opacity = 1;
+	startButton.style.opacity = 1;
+	ui.style.opacity = 0;
 }
 
 function rotateWorld(){
